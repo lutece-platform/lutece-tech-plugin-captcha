@@ -35,37 +35,50 @@ package fr.paris.lutece.plugins.captcha.service;
 
 import fr.paris.lutece.portal.service.captcha.ICaptchaService;
 import fr.paris.lutece.portal.service.datastore.DatastoreService;
-import fr.paris.lutece.portal.service.spring.SpringContextService;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
-import javax.servlet.http.HttpServletRequest;
+import jakarta.annotation.PostConstruct;
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.enterprise.inject.spi.CDI;
+import jakarta.inject.Named;
+import jakarta.servlet.http.HttpServletRequest;
 
 import org.apache.commons.lang3.StringUtils;
 
 /**
  * Captcha service
  */
+@ApplicationScoped
+@Named( CaptchaService.BEAN_NAME )
 public class CaptchaService implements ICaptchaService
 {
     public static final String BEAN_NAME = "captcha.captchaService";
 
     private static final String DATASTORE_KEY_DEFAULT_CAPTCHA_ENGINE = "captcha.defaultProvider";
 
+    private List<ICaptchaEngine> _listCaptchaEngine;
+    
+    @PostConstruct
+    void init()
+    {
+        _listCaptchaEngine = CDI.current( ).select( ICaptchaEngine.class ).stream( ).toList( );
+    }
+    
     /**
      * {@inheritDoc}
      */
     @Override
     public boolean validate( HttpServletRequest request )
     {
-        List<ICaptchaEngine> listCaptchaEngine = SpringContextService.getBeansOfType( ICaptchaEngine.class );
-        if ( listCaptchaEngine != null && listCaptchaEngine.size( ) > 0 )
+        if ( _listCaptchaEngine != null && _listCaptchaEngine.size( ) > 0 )
         {
             String strDefaultCaptchaEngineName = getDefaultCaptchaEngineName( );
-            for ( ICaptchaEngine captchaImpl : listCaptchaEngine )
+            for ( ICaptchaEngine captchaImpl : _listCaptchaEngine )
             {
-                if ( StringUtils.equals( strDefaultCaptchaEngineName, captchaImpl.getCaptchaEngineName( ) ) )
+                if ( Objects.equals( strDefaultCaptchaEngineName, captchaImpl.getCaptchaEngineName( ) ) )
                 {
                     return captchaImpl.validate( request );
                 }
@@ -81,13 +94,12 @@ public class CaptchaService implements ICaptchaService
     @Override
     public String getHtmlCode( )
     {
-        List<ICaptchaEngine> listCaptchaEngine = SpringContextService.getBeansOfType( ICaptchaEngine.class );
-        if ( listCaptchaEngine != null && listCaptchaEngine.size( ) > 0 )
+        if ( _listCaptchaEngine != null && _listCaptchaEngine.size( ) > 0 )
         {
             String strDefaultCaptchaEngineName = getDefaultCaptchaEngineName( );
-            for ( ICaptchaEngine captchaImpl : listCaptchaEngine )
+            for ( ICaptchaEngine captchaImpl : _listCaptchaEngine )
             {
-                if ( StringUtils.equals( strDefaultCaptchaEngineName, captchaImpl.getCaptchaEngineName( ) ) )
+                if ( Objects.equals( strDefaultCaptchaEngineName, captchaImpl.getCaptchaEngineName( ) ) )
                 {
                     return captchaImpl.getHtmlCode( );
                 }
@@ -103,15 +115,14 @@ public class CaptchaService implements ICaptchaService
     @Override
     public List<String> getCaptchaEngineNameList( )
     {
-        List<ICaptchaEngine> listCaptchaEngine = SpringContextService.getBeansOfType( ICaptchaEngine.class );
-        if ( listCaptchaEngine != null && listCaptchaEngine.size( ) > 0 )
+        if ( _listCaptchaEngine != null && _listCaptchaEngine.size( ) > 0 )
         {
-            List<String> listCaptchaEngineNames = new ArrayList<String>( listCaptchaEngine.size( ) );
-            for ( ICaptchaEngine captchaImpl : listCaptchaEngine )
+            List<String> _listCaptchaEngineNames = new ArrayList<String>( _listCaptchaEngine.size( ) );
+            for ( ICaptchaEngine captchaImpl : _listCaptchaEngine )
             {
-                listCaptchaEngineNames.add( captchaImpl.getCaptchaEngineName( ) );
+                _listCaptchaEngineNames.add( captchaImpl.getCaptchaEngineName( ) );
             }
-            return listCaptchaEngineNames;
+            return _listCaptchaEngineNames;
         }
         return new ArrayList<String>( );
     }
@@ -126,10 +137,9 @@ public class CaptchaService implements ICaptchaService
         if ( StringUtils.isBlank( strDefaultCaptcha ) )
         {
             // If there is no default captcha engine, we get the first one from the captcha engine list
-            List<ICaptchaEngine> listCaptchaEngine = SpringContextService.getBeansOfType( ICaptchaEngine.class );
-            if ( listCaptchaEngine != null && listCaptchaEngine.size( ) > 0 )
+            if ( _listCaptchaEngine != null && _listCaptchaEngine.size( ) > 0 )
             {
-                for ( ICaptchaEngine captchaEngine : listCaptchaEngine )
+                for ( ICaptchaEngine captchaEngine : _listCaptchaEngine )
                 {
                     if ( StringUtils.isNotBlank( captchaEngine.getCaptchaEngineName( ) ) )
                     {
