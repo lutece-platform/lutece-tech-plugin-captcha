@@ -51,8 +51,13 @@ public interface ICaptchaEngine
 
     /**
      * Gets the captcha HTML code
+     * <p>
+     * The returned string is HTML rendered by the engine, every value escaped there. Under the always-on HTML
+     * auto-escaping of FreeMarker (LUT-33153), a String put in a model prints as text: the consumer that puts it in its
+     * model wraps it with {@code HtmlMarkup.of( strHtml )} and writes it {@code ${captcha}}, never with {@code ?no_esc}.
+     * </p>
      * 
-     * @return The captcha HTML code
+     * @return The captcha HTML code, to be wrapped with {@code HtmlMarkup.of} by the consumer
      */
     String getHtmlCode( );
 

@@ -90,6 +90,10 @@ public class CaptchaService implements ICaptchaService
 
     /**
      * {@inheritDoc}
+     * <p>
+     * Returns the HTML of the default engine as is (see {@link ICaptchaEngine#getHtmlCode( )}): the consumer wraps it
+     * with {@code HtmlMarkup.of} when it puts it in its model.
+     * </p>
      */
     @Override
     public String getHtmlCode( )
