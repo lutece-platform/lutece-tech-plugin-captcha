@@ -35,9 +35,12 @@ package fr.paris.lutece.plugins.captcha.web;
 
 import fr.paris.lutece.plugins.captcha.service.CaptchaService;
 import fr.paris.lutece.portal.business.user.AdminUser;
+import fr.paris.lutece.portal.service.admin.AccessDeniedException;
 import fr.paris.lutece.portal.service.admin.AdminUserService;
 import fr.paris.lutece.portal.service.captcha.ICaptchaService;
 import fr.paris.lutece.portal.service.i18n.I18nService;
+import fr.paris.lutece.portal.service.security.ISecurityTokenService;
+import fr.paris.lutece.portal.service.security.SecurityTokenService;
 import fr.paris.lutece.portal.service.template.AppTemplateService;
 import fr.paris.lutece.portal.service.util.AppPathService;
 import fr.paris.lutece.portal.service.dashboard.admin.AdminDashboardComponent;
@@ -64,6 +67,11 @@ public class CaptchaLutecePanelJspBean extends AdminDashboardComponent
     private static final String LABEL_TITLE_CAPTCHA = "captcha.globalmanagement.panelTitle";
 
     private static final String PARAMETER_CAPTCHA_ENGINE = "captcha_engine";
+    private static final String METHOD_POST = "POST";
+
+    // Key of the security token of the form that changes the default engine
+    private static final String ACTION_UPDATE_DEFAULT_CAPTCHA = "updateDefaultCaptcha";
+    private static final String MESSAGE_INVALID_TOKEN = "Invalid security token";
 
     private static final String MARK_CURRENT_CAPTCHA_ENGINE = "current_captcha_engine";
     private static final String MARK_LIST_CAPTCHA_ENGINE = "listCaptchaEngine";
@@ -91,6 +99,7 @@ public class CaptchaLutecePanelJspBean extends AdminDashboardComponent
         Map<String, Object> model = new HashMap<>( );
         model.put( MARK_CURRENT_CAPTCHA_ENGINE, captchaService.getDefaultCaptchaEngineName( ) );
         model.put( MARK_LIST_CAPTCHA_ENGINE, captchaService.getCaptchaEngineNameList( ) );
+        model.put( SecurityTokenService.MARK_TOKEN, getSecurityTokenService( ).getToken( request, ACTION_UPDATE_DEFAULT_CAPTCHA ) );
 
         HtmlTemplate template = AppTemplateService.getTemplate( TEMPLATE_CAPTCHA_PANEL, AdminUserService.getLocale( request ), model );
 
@@ -109,18 +118,34 @@ public class CaptchaLutecePanelJspBean extends AdminDashboardComponent
     }
 
     /**
-     * Update the default captcha to use
+     * Update the default captcha to use. The request must be a POST that carries the security token of the panel form
      * 
      * @param request
      *            The request
      * @return The next URL to redirect to
+     * @throws AccessDeniedException
+     *             if the request is not a POST or its security token is not valid
      */
-    public String updateDefaultCaptcha( HttpServletRequest request )
+    public String updateDefaultCaptcha( HttpServletRequest request ) throws AccessDeniedException
     {
+        if ( !METHOD_POST.equalsIgnoreCase( request.getMethod( ) ) || !getSecurityTokenService( ).validate( request, ACTION_UPDATE_DEFAULT_CAPTCHA ) )
+        {
+            throw new AccessDeniedException( MESSAGE_INVALID_TOKEN );
+        }
         String strDefaultCaptcha = request.getParameter( PARAMETER_CAPTCHA_ENGINE );
         ICaptchaService captchaService = getCaptchaService( );
         captchaService.setDefaultCaptchaEngineName( strDefaultCaptcha );
         return AppPathService.getBaseUrl( request );
+    }
+
+    /**
+     * Get the security token service
+     * 
+     * @return the security token service
+     */
+    private static ISecurityTokenService getSecurityTokenService( )
+    {
+        return CDI.current( ).select( ISecurityTokenService.class ).get( );
     }
 
     /**

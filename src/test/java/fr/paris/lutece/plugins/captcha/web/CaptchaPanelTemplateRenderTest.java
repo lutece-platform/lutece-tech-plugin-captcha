@@ -81,6 +81,7 @@ public class CaptchaPanelTemplateRenderTest
             model.put( "current_captcha_engine", strCurrent );
         }
         model.put( "listCaptchaEngine", listEngines );
+        model.put( "token", "token" );
 
         Template template = cfg.getTemplate( TEMPLATE_CAPTCHA_PANEL );
         StringWriter writer = new StringWriter( );

@@ -5,7 +5,8 @@
 				<h3 class="box-title">#i18n{captcha.globalmanagement.panelTitle}</h3>
 			</div>
             <div class="box-body">		
-				<form class="form-horizontal" action="jsp/admin/plugins/captcha/globalmanagement/DoUpdateDefaultCaptcha.jsp">
+				<form class="form-horizontal" action="jsp/admin/plugins/captcha/globalmanagement/DoUpdateDefaultCaptcha.jsp" method="post">
+					<input type="hidden" name="token" value="${token}">
 					<div class="form-group">
 						<label class="control-label col-xs-12 col-sm-2 col-md-2" for="captcha_engine">#i18n{captcha.globalmanagement.captchaEngine}</label>
 						<div class="col-xs-12 col-sm-10 col-md-10">
