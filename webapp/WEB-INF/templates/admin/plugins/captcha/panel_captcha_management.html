@@ -7,12 +7,12 @@
             <div class="box-body">		
 				<form class="form-horizontal" action="jsp/admin/plugins/captcha/globalmanagement/DoUpdateDefaultCaptcha.jsp">
 					<div class="form-group">
-						<label class="control-label col-xs-12 col-sm-2 col-md-2">#i18n{captcha.globalmanagement.captchaEngine}</label>
+						<label class="control-label col-xs-12 col-sm-2 col-md-2" for="captcha_engine">#i18n{captcha.globalmanagement.captchaEngine}</label>
 						<div class="col-xs-12 col-sm-10 col-md-10">
 							<#if !current_captcha_engine??>
 								<#assign current_captcha_engine = "">
 							</#if>
-							<select name="captcha_engine" class="form-control">
+							<select name="captcha_engine" id="captcha_engine" class="form-control">
 								<#list listCaptchaEngine as captchaEngine>
 									<option value="${captchaEngine}" <#if current_captcha_engine == captchaEngine>selected="selected"</#if>>${captchaEngine}</option>
 								</#list>
@@ -22,7 +22,7 @@
 					<div class="form-group">	
 						<div class="col-xs-12 col-sm-offset-2 col-sm-10 col-md-offset-2 col-md-10">
 							<button type="submit" class="btn btn-primary btn-flat">
-								<i class="fa fa-check">&nbsp;</i>&nbsp;#i18n{portal.util.labelModify}
+								<i class="fa fa-check" aria-hidden="true"></i>&nbsp;#i18n{portal.util.labelModify}
 							</button>
 						</div>
 					</div>
