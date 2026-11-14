@@ -57,7 +57,7 @@ public class CaptchaLutecePanelJspBeanTest extends LuteceTestCase
 {
     private static final String DATASTORE_KEY_DEFAULT_CAPTCHA_ENGINE = "captcha.defaultProvider";
     private static final String ENGINE_BEFORE = "engineBefore";
-    private static final String ENGINE_AFTER = "engineAfter";
+    private static final String ENGINE_AFTER = TestCaptchaEngine.ENGINE_NAME;
     private static final Pattern FORM_TOKEN = Pattern.compile( "<form[^>]*method=\"post\"[\\s\\S]*?name=\"token\"[^>]*value=\"([^\"]+)\"" );
 
     private CaptchaLutecePanelJspBean _bean;
@@ -137,11 +137,40 @@ public class CaptchaLutecePanelJspBeanTest extends LuteceTestCase
         assertEquals( ENGINE_BEFORE, DatastoreService.getDataValue( DATASTORE_KEY_DEFAULT_CAPTCHA_ENGINE, null ) );
     }
 
+    /**
+     * With a valid token, an engine that is not available is refused with a message, and the default engine does not
+     * change
+     *
+     * @throws AccessDeniedException
+     *             if the token is refused
+     */
+    @Test
+    public void testUpdateWithAnUnknownEngineIsRefused( ) throws AccessDeniedException
+    {
+        for ( String strEngine : new String [ ] {
+                "unknownEngine", ""
+        } )
+        {
+            MockHttpServletRequest request = newRequest( "POST", strEngine );
+            Matcher matcher = FORM_TOKEN.matcher( _bean.getDashboardData( new AdminUser( ), request ) );
+            assertTrue( matcher.find( ), "The panel must post its form with a security token" );
+            request.addParameter( SecurityTokenService.PARAMETER_TOKEN, matcher.group( 1 ) );
+
+            assertTrue( _bean.updateDefaultCaptcha( request ).contains( "AdminMessage.jsp" ), "An unknown engine must be refused with a message" );
+            assertEquals( ENGINE_BEFORE, DatastoreService.getDataValue( DATASTORE_KEY_DEFAULT_CAPTCHA_ENGINE, null ) );
+        }
+    }
+
     private static MockHttpServletRequest newRequest( String strMethod )
+    {
+        return newRequest( strMethod, ENGINE_AFTER );
+    }
+
+    private static MockHttpServletRequest newRequest( String strMethod, String strEngine )
     {
         MockHttpServletRequest request = new MockHttpServletRequest( );
         request.setMethod( strMethod );
-        request.addParameter( "captcha_engine", ENGINE_AFTER );
+        request.addParameter( "captcha_engine", strEngine );
         return request;
     }
 }

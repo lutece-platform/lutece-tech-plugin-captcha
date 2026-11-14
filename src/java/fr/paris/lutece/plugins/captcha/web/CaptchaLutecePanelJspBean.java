@@ -39,6 +39,8 @@ import fr.paris.lutece.portal.service.admin.AccessDeniedException;
 import fr.paris.lutece.portal.service.admin.AdminUserService;
 import fr.paris.lutece.portal.service.captcha.ICaptchaService;
 import fr.paris.lutece.portal.service.i18n.I18nService;
+import fr.paris.lutece.portal.service.message.AdminMessage;
+import fr.paris.lutece.portal.service.message.AdminMessageService;
 import fr.paris.lutece.portal.service.security.ISecurityTokenService;
 import fr.paris.lutece.portal.service.security.SecurityTokenService;
 import fr.paris.lutece.portal.service.template.AppTemplateService;
@@ -72,6 +74,7 @@ public class CaptchaLutecePanelJspBean extends AdminDashboardComponent
     // Key of the security token of the form that changes the default engine
     private static final String ACTION_UPDATE_DEFAULT_CAPTCHA = "updateDefaultCaptcha";
     private static final String MESSAGE_INVALID_TOKEN = "Invalid security token";
+    private static final String MESSAGE_UNKNOWN_CAPTCHA_ENGINE = "captcha.globalmanagement.message.unknownCaptchaEngine";
 
     private static final String MARK_CURRENT_CAPTCHA_ENGINE = "current_captcha_engine";
     private static final String MARK_LIST_CAPTCHA_ENGINE = "listCaptchaEngine";
@@ -118,11 +121,12 @@ public class CaptchaLutecePanelJspBean extends AdminDashboardComponent
     }
 
     /**
-     * Update the default captcha to use. The request must be a POST that carries the security token of the panel form
+     * Update the default captcha to use. The request must be a POST that carries the security token of the panel form,
+     * and the engine must be one of the available engines
      * 
      * @param request
      *            The request
-     * @return The next URL to redirect to
+     * @return The next URL to redirect to, or the URL of an error message if the engine is not available
      * @throws AccessDeniedException
      *             if the request is not a POST or its security token is not valid
      */
@@ -134,6 +138,10 @@ public class CaptchaLutecePanelJspBean extends AdminDashboardComponent
         }
         String strDefaultCaptcha = request.getParameter( PARAMETER_CAPTCHA_ENGINE );
         ICaptchaService captchaService = getCaptchaService( );
+        if ( !captchaService.getCaptchaEngineNameList( ).contains( strDefaultCaptcha ) )
+        {
+            return AdminMessageService.getMessageUrl( request, MESSAGE_UNKNOWN_CAPTCHA_ENGINE, AdminMessage.TYPE_STOP );
+        }
         captchaService.setDefaultCaptchaEngineName( strDefaultCaptcha );
         return AppPathService.getBaseUrl( request );
     }
