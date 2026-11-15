@@ -33,6 +33,7 @@
  */
 package fr.paris.lutece.plugins.captcha.web;
 
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.util.regex.Matcher;
@@ -45,7 +46,9 @@ import org.junit.jupiter.api.Test;
 import fr.paris.lutece.portal.business.user.AdminUser;
 import fr.paris.lutece.portal.service.admin.AccessDeniedException;
 import fr.paris.lutece.portal.service.datastore.DatastoreService;
+import fr.paris.lutece.portal.service.i18n.I18nService;
 import fr.paris.lutece.portal.service.security.SecurityTokenService;
+import fr.paris.lutece.portal.web.l10n.LocaleService;
 import fr.paris.lutece.test.LuteceTestCase;
 import fr.paris.lutece.test.mocks.MockHttpServletRequest;
 
@@ -56,6 +59,7 @@ import fr.paris.lutece.test.mocks.MockHttpServletRequest;
 public class CaptchaLutecePanelJspBeanTest extends LuteceTestCase
 {
     private static final String DATASTORE_KEY_DEFAULT_CAPTCHA_ENGINE = "captcha.defaultProvider";
+    private static final String COMPONENT_NAME = "captchaAdminDashboardComponent";
     private static final String ENGINE_BEFORE = "engineBefore";
     private static final String ENGINE_AFTER = TestCaptchaEngine.ENGINE_NAME;
     private static final Pattern FORM_TOKEN = Pattern.compile( "<form[^>]*method=\"post\"[\\s\\S]*?name=\"token\"[^>]*value=\"([^\"]+)\"" );
@@ -159,6 +163,18 @@ public class CaptchaLutecePanelJspBeanTest extends LuteceTestCase
             assertTrue( _bean.updateDefaultCaptcha( request ).contains( "AdminMessage.jsp" ), "An unknown engine must be refused with a message" );
             assertEquals( ENGINE_BEFORE, DatastoreService.getDataValue( DATASTORE_KEY_DEFAULT_CAPTCHA_ENGINE, null ) );
         }
+    }
+
+    /**
+     * The core stores the placement of an admin dashboard component under its name: the name is the one declared in
+     * the plugin file, whatever the label of the panel title or the default language
+     */
+    @Test
+    public void testNameIsTheDeclaredComponentName( )
+    {
+        _bean.setName( COMPONENT_NAME );
+        assertEquals( COMPONENT_NAME, _bean.getName( ) );
+        assertNotEquals( I18nService.getLocalizedString( "captcha.globalmanagement.panelTitle", LocaleService.getDefault( ) ), _bean.getName( ) );
     }
 
     private static MockHttpServletRequest newRequest( String strMethod )

@@ -38,7 +38,6 @@ import fr.paris.lutece.portal.business.user.AdminUser;
 import fr.paris.lutece.portal.service.admin.AccessDeniedException;
 import fr.paris.lutece.portal.service.admin.AdminUserService;
 import fr.paris.lutece.portal.service.captcha.ICaptchaService;
-import fr.paris.lutece.portal.service.i18n.I18nService;
 import fr.paris.lutece.portal.service.message.AdminMessage;
 import fr.paris.lutece.portal.service.message.AdminMessageService;
 import fr.paris.lutece.portal.service.security.ISecurityTokenService;
@@ -46,7 +45,6 @@ import fr.paris.lutece.portal.service.security.SecurityTokenService;
 import fr.paris.lutece.portal.service.template.AppTemplateService;
 import fr.paris.lutece.portal.service.util.AppPathService;
 import fr.paris.lutece.portal.service.dashboard.admin.AdminDashboardComponent;
-import fr.paris.lutece.portal.web.l10n.LocaleService;
 import fr.paris.lutece.util.html.HtmlTemplate;
 
 import java.util.HashMap;
@@ -57,7 +55,8 @@ import jakarta.enterprise.inject.spi.CDI;
 import jakarta.servlet.http.HttpServletRequest;
 
 /**
- * Panel for global management page
+ * Panel for global management page. Its name, under which the core stores its placement, is the one declared in the
+ * plugin file (captchaAdminDashboardComponent); the panel template shows the translated title
  */
 public class CaptchaLutecePanelJspBean extends AdminDashboardComponent
 {
@@ -65,8 +64,6 @@ public class CaptchaLutecePanelJspBean extends AdminDashboardComponent
      * generated serial version UID
      */
     private static final long serialVersionUID = 8792952492908177294L;
-
-    private static final String LABEL_TITLE_CAPTCHA = "captcha.globalmanagement.panelTitle";
 
     private static final String PARAMETER_CAPTCHA_ENGINE = "captcha_engine";
     private static final String METHOD_POST = "POST";
@@ -82,15 +79,6 @@ public class CaptchaLutecePanelJspBean extends AdminDashboardComponent
     private static final String TEMPLATE_CAPTCHA_PANEL = "admin/plugins/captcha/panel_captcha_management.html";
 
     private ICaptchaService _captchaService;
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public String getName( )
-    {
-        return I18nService.getLocalizedString( LABEL_TITLE_CAPTCHA, LocaleService.getDefault( ) );
-    }
 
     /**
      * {@inheritDoc}
