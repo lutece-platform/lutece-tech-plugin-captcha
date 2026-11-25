@@ -112,6 +112,25 @@ public class CaptchaLutecePanelJspBeanTest extends LuteceTestCase
     }
 
     /**
+     * After the change, the admin is sent back to the technical administration page that holds the panel, not to the
+     * base URL (portal home, out of the back office)
+     *
+     * @throws AccessDeniedException
+     *             if the token is refused
+     */
+    @Test
+    public void testUpdateReturnsToTheTechnicalAdministration( ) throws AccessDeniedException
+    {
+        MockHttpServletRequest request = newRequest( "POST" );
+        Matcher matcher = FORM_TOKEN.matcher( _bean.getDashboardData( new AdminUser( ), request ) );
+        assertTrue( matcher.find( ), "The panel must post its form with a security token" );
+        request.addParameter( SecurityTokenService.PARAMETER_TOKEN, matcher.group( 1 ) );
+
+        String strUrl = _bean.updateDefaultCaptcha( request );
+        assertTrue( strUrl.contains( "jsp/admin/AdminTechnicalMenu.jsp" ), "redirect to the technical administration expected, was " + strUrl );
+    }
+
+    /**
      * Without a token, or with a token that was not issued, the default engine does not change
      */
     @Test

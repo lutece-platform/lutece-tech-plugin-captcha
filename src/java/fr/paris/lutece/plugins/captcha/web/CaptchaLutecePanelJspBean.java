@@ -76,6 +76,7 @@ public class CaptchaLutecePanelJspBean extends AdminDashboardComponent
     private static final String MARK_CURRENT_CAPTCHA_ENGINE = "current_captcha_engine";
     private static final String MARK_LIST_CAPTCHA_ENGINE = "listCaptchaEngine";
 
+    private static final String JSP_TECHNICAL_ADMINISTRATION = "jsp/admin/AdminTechnicalMenu.jsp";
     private static final String TEMPLATE_CAPTCHA_PANEL = "admin/plugins/captcha/panel_captcha_management.html";
 
     private ICaptchaService _captchaService;
@@ -131,7 +132,8 @@ public class CaptchaLutecePanelJspBean extends AdminDashboardComponent
             return AdminMessageService.getMessageUrl( request, MESSAGE_UNKNOWN_CAPTCHA_ENGINE, AdminMessage.TYPE_STOP );
         }
         captchaService.setDefaultCaptchaEngineName( strDefaultCaptcha );
-        return AppPathService.getBaseUrl( request );
+        // back to the technical administration that holds the panel (the base URL is the portal home)
+        return AppPathService.getBaseUrl( request ) + JSP_TECHNICAL_ADMINISTRATION;
     }
 
     /**
