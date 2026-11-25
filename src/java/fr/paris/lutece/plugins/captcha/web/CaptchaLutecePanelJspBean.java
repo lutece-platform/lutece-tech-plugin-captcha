@@ -65,6 +65,10 @@ public class CaptchaLutecePanelJspBean extends AdminDashboardComponent
      */
     private static final long serialVersionUID = 8792952492908177294L;
 
+    /** Right of the site properties (core): the default engine is a site-wide setting */
+    public static final String RIGHT_MANAGE_CAPTCHA = "CORE_PROPERTIES_MANAGEMENT";
+    private static final String MESSAGE_NO_RIGHT = "No right to change the default captcha engine";
+
     private static final String PARAMETER_CAPTCHA_ENGINE = "captcha_engine";
     private static final String METHOD_POST = "POST";
 
@@ -99,6 +103,18 @@ public class CaptchaLutecePanelJspBean extends AdminDashboardComponent
     }
 
     /**
+     * {@inheritDoc}
+     * <p>
+     * The panel is shown only to the users who have the right of the site properties.
+     * </p>
+     */
+    @Override
+    public String getRight( )
+    {
+        return RIGHT_MANAGE_CAPTCHA;
+    }
+
+    /**
      * Returns the panel's order. This panel is a second panel.
      * 
      * @return 2
@@ -124,6 +140,11 @@ public class CaptchaLutecePanelJspBean extends AdminDashboardComponent
         if ( !METHOD_POST.equalsIgnoreCase( request.getMethod( ) ) || !getSecurityTokenService( ).validate( request, ACTION_UPDATE_DEFAULT_CAPTCHA ) )
         {
             throw new AccessDeniedException( MESSAGE_INVALID_TOKEN );
+        }
+        AdminUser user = AdminUserService.getAdminUser( request );
+        if ( user == null || !user.checkRight( RIGHT_MANAGE_CAPTCHA ) )
+        {
+            throw new AccessDeniedException( MESSAGE_NO_RIGHT );
         }
         String strDefaultCaptcha = request.getParameter( PARAMETER_CAPTCHA_ENGINE );
         ICaptchaService captchaService = getCaptchaService( );

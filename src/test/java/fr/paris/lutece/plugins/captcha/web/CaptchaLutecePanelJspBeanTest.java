@@ -49,6 +49,7 @@ import fr.paris.lutece.portal.service.datastore.DatastoreService;
 import fr.paris.lutece.portal.service.i18n.I18nService;
 import fr.paris.lutece.portal.service.security.SecurityTokenService;
 import fr.paris.lutece.portal.web.l10n.LocaleService;
+import fr.paris.lutece.test.AdminUserUtils;
 import fr.paris.lutece.test.LuteceTestCase;
 import fr.paris.lutece.test.mocks.MockHttpServletRequest;
 
@@ -60,6 +61,7 @@ public class CaptchaLutecePanelJspBeanTest extends LuteceTestCase
 {
     private static final String DATASTORE_KEY_DEFAULT_CAPTCHA_ENGINE = "captcha.defaultProvider";
     private static final String COMPONENT_NAME = "captchaAdminDashboardComponent";
+    private static final String RIGHT = "CORE_PROPERTIES_MANAGEMENT";
     private static final String ENGINE_BEFORE = "engineBefore";
     private static final String ENGINE_AFTER = TestCaptchaEngine.ENGINE_NAME;
     private static final Pattern FORM_TOKEN = Pattern.compile( "<form[^>]*method=\"post\"[\\s\\S]*?name=\"token\"[^>]*value=\"([^\"]+)\"" );
@@ -128,6 +130,25 @@ public class CaptchaLutecePanelJspBeanTest extends LuteceTestCase
 
         String strUrl = _bean.updateDefaultCaptcha( request );
         assertTrue( strUrl.contains( "jsp/admin/AdminTechnicalMenu.jsp" ), "redirect to the technical administration expected, was " + strUrl );
+    }
+
+    /**
+     * The panel is shown only to the users who have the right of the site properties, and the change is refused to the
+     * others, even with a valid token
+     */
+    @Test
+    public void testPanelAndUpdateRequireTheRight( )
+    {
+        assertEquals( RIGHT, _bean.getRight( ), "the panel must be shown only to the users with the right " + RIGHT );
+
+        MockHttpServletRequest request = newRequestWithoutRight( "POST", ENGINE_AFTER );
+        AdminUserUtils.registerAdminUserWithRight( request, new AdminUser( ), "FORMS_MANAGEMENT" );
+        Matcher matcher = FORM_TOKEN.matcher( _bean.getDashboardData( new AdminUser( ), request ) );
+        assertTrue( matcher.find( ), "The panel must post its form with a security token" );
+        request.addParameter( SecurityTokenService.PARAMETER_TOKEN, matcher.group( 1 ) );
+
+        assertThrows( AccessDeniedException.class, ( ) -> _bean.updateDefaultCaptcha( request ) );
+        assertEquals( ENGINE_BEFORE, DatastoreService.getDataValue( DATASTORE_KEY_DEFAULT_CAPTCHA_ENGINE, null ) );
     }
 
     /**
@@ -202,6 +223,13 @@ public class CaptchaLutecePanelJspBeanTest extends LuteceTestCase
     }
 
     private static MockHttpServletRequest newRequest( String strMethod, String strEngine )
+    {
+        MockHttpServletRequest request = newRequestWithoutRight( strMethod, strEngine );
+        AdminUserUtils.registerAdminUserWithRight( request, new AdminUser( ), RIGHT );
+        return request;
+    }
+
+    private static MockHttpServletRequest newRequestWithoutRight( String strMethod, String strEngine )
     {
         MockHttpServletRequest request = new MockHttpServletRequest( );
         request.setMethod( strMethod );
