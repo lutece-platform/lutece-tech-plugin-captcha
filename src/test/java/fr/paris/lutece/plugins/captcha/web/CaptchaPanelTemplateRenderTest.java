@@ -117,4 +117,20 @@ public class CaptchaPanelTemplateRenderTest
         assertTrue( render( "recaptcha", List.of( "jcaptcha", "recaptcha" ) ).contains( "<option value=\"recaptcha\" selected=\"selected\">recaptcha</option>" ) );
         assertFalse( render( null, List.of( "jcaptcha", "recaptcha" ) ).contains( "selected=\"selected\"" ) );
     }
+
+    /**
+     * A default engine that is not available (value of an older version, README value, removed module) is shown as
+     * such: the panel must not display the first engine as selected while the captcha is off on the site.
+     *
+     * @throws Exception
+     *             if the template does not render
+     */
+    @Test
+    public void testUnknownDefaultEngineIsShown( ) throws Exception
+    {
+        String strHtml = render( "captchetat", List.of( "CaptchEtat" ) );
+        assertTrue( strHtml.contains( "<option value=\"\" selected=\"selected\" disabled=\"disabled\">captchetat" ), strHtml );
+        assertFalse( strHtml.contains( "<option value=\"CaptchEtat\" selected" ), strHtml );
+        assertTrue( strHtml.contains( "captcha.globalmanagement.message.unknownDefaultCaptchaEngine" ), strHtml );
+    }
 }
